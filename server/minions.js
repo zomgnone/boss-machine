@@ -63,6 +63,52 @@ minionsRouter.delete('/:id', (req, res, next) => {
   }
 });
 
+// Get work for a minion
+minionsRouter.get('/:id/work', (req, res, next) => {
+  const minionWork = getAllFromDatabase('work').filter(work => work.minionId === req.params.id);
+  res.send(minionWork);
+});
+
+minionsRouter.param('workId', (req, res, next, id) => {
+  const work = getFromDatabaseById('work', id);
+  if (work) {
+    req.work = work;
+    next();
+  } else {
+    res.status(404).send('Work not found');
+  }
+});
+
+// Edit work of a minion
+minionsRouter.put('/:id/work/:workId', (req, res, next) => {
+  const editedWork = updateInstanceInDatabase('work', req.body);
+  res.send(editedWork);
+});
+
+
+// Create new work for a minion
+minionsRouter.post('/:id/work', (req, res, next) => {
+  const newWork = req.body;
+  newWork.minionId = req.params.id;
+  const workAdded = addToDatabase('work', newWork);
+  if (workAdded) {
+    res.status(201).send(workAdded);
+  } else {
+    res.status(500).send();
+  }
+});
+
+// Delete work for a minion
+minionsRouter.delete('/:id/work/:workId', (req, res, next) => {
+  const deleteStatus = deleteFromDatabasebyId('work', req.params.workId);
+  if (deleteStatus) {
+    res.status(204).send();
+  } else {
+    res.status(500).send();
+  }
+});
+
+
 // Error handling
 minionsRouter.use('/', (err, req, res, next) => {
   res.status(err.status || 400).send(err.message);
